@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mubasher Thrift">
+<meta name="theme-color" content="#0f172a">
+<title>Mubasher Thrift Store</title>
+<link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#263448;--surface3:#2d3f57;--border:#334155;--border2:#475569;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --green:#34d399;--green-bg:rgba(52,211,153,.1);--green-border:rgba(52,211,153,.25);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.1);--blue-border:rgba(96,165,250,.25);
+  --amber:#fbbf24;--amber-bg:rgba(251,191,36,.1);--amber-border:rgba(251,191,36,.25);
+  --red:#f87171;--red-bg:rgba(248,113,113,.1);--red-border:rgba(248,113,113,.25);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.1);--purple-border:rgba(167,139,250,.25);
+  --pink:#f472b6;--pink-bg:rgba(244,114,182,.1);--pink-border:rgba(244,114,182,.25);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.1);--teal-border:rgba(45,212,191,.25);
+  --accent:#6366f1;--accent2:#818cf8;
+  --radius:10px;--radius-lg:14px;--radius-xl:20px;
+  font-family:'Outfit',sans-serif;
+}
+body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg);position:relative;overflow:hidden}
+.login-glow1{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 65%);top:-150px;right:-150px;pointer-events:none}
+.login-glow2{position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(52,211,153,.08) 0%,transparent 65%);bottom:-100px;left:-100px;pointer-events:none}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2.25rem;width:100%;max-width:400px;position:relative;z-index:1}
+.shop-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;background:linear-gradient(135deg,#f1f5f9,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2px}
+.shop-sub{color:var(--text3);font-size:11px;margin-bottom:1.75rem;letter-spacing:.3px}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.role-card{padding:1rem;border:1.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;background:var(--surface2);text-align:center;transition:all .18s;-webkit-tap-highlight-color:transparent}
+.role-card:hover,.role-card:active{border-color:var(--accent);background:var(--purple-bg)}
+.role-card.sel{border-color:var(--accent);background:var(--purple-bg)}
+.role-emoji{font-size:24px;margin-bottom:6px}
+.role-name{font-size:13px;font-weight:600}
+.role-hint{font-size:10px;color:var(--text3);margin-top:2px}
+.login-go{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s}
+.login-go:disabled{opacity:.3;cursor:not-allowed}
+
+/* APP SHELL */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.sidebar{display:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.45rem .2rem;cursor:pointer;color:var(--text3);border:none;background:none;-webkit-tap-highlight-color:transparent;min-height:52px;transition:color .12s;font-family:'Outfit',sans-serif}
+.bnav-btn.active{color:var(--accent2)}
+.bnav-ico{font-size:17px;line-height:1;margin-bottom:2px}
+.bnav-lbl{font-size:9px;font-weight:500}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:40}
+.topbar-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--text)}
+.main{flex:1;overflow-y:auto;padding-bottom:calc(58px + env(safe-area-inset-bottom));min-width:0}
+.content{padding:1rem}
+
+@media(min-width:768px){
+  .app{flex-direction:row;min-height:100vh}
+  .bottom-nav{display:none}
+  .sidebar{display:flex;flex-direction:column;width:230px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto}
+  .sidebar-top{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+  .sidebar-shopname{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;background:linear-gradient(135deg,#f1f5f9,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.3}
+  .sidebar-role{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
+  .nav-section-label{padding:.75rem 1.25rem .25rem;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+  .nav-btn{display:flex;align-items:center;gap:10px;padding:.6rem 1.25rem;color:var(--text2);cursor:pointer;font-size:13px;border:none;background:none;width:100%;text-align:left;font-family:'Outfit',sans-serif;transition:all .12s;border-right:2px solid transparent}
+  .nav-btn:hover{background:var(--surface2);color:var(--text)}
+  .nav-btn.active{background:var(--purple-bg);color:var(--accent2);border-right-color:var(--accent)}
+  .nav-ico{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+  .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding:.5rem 0}
+  .logout-nav{display:flex;align-items:center;gap:10px;padding:.6rem 1.25rem;color:var(--text3);cursor:pointer;font-size:12px;border:none;background:none;width:100%;text-align:left;font-family:'Outfit',sans-serif;transition:color .12s}
+  .logout-nav:hover{color:var(--red)}
+  .main{flex:1;overflow-y:auto;padding-bottom:0;min-width:0}
+  .content{padding:1.5rem}
+}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:.875rem}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;gap:8px;flex-wrap:wrap}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+
+/* METRICS */
+.mg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:.875rem}
+@media(min-width:540px){.mg{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}}
+.mc{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem}
+.mc-ico{font-size:18px;margin-bottom:5px}
+.mc-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;font-weight:500}
+.mc-val{font-size:20px;font-weight:700;line-height:1}
+.mc-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.mc.green{border-color:var(--green-border);background:var(--green-bg)}.mc.green .mc-val{color:var(--green)}
+.mc.red{border-color:var(--red-border);background:var(--red-bg)}.mc.red .mc-val{color:var(--red)}
+.mc.blue{border-color:var(--blue-border);background:var(--blue-bg)}.mc.blue .mc-val{color:var(--blue)}
+.mc.amber{border-color:var(--amber-border);background:var(--amber-bg)}.mc.amber .mc-val{color:var(--amber)}
+.mc.purple{border-color:var(--purple-border);background:var(--purple-bg)}.mc.purple .mc-val{color:var(--purple)}
+.mc.teal{border-color:var(--teal-border);background:var(--teal-bg)}.mc.teal .mc-val{color:var(--teal)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:.5rem .65rem;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+td{padding:.6rem .65rem;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;gap:3px}
+.bdg-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.bdg-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.bdg-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.bdg-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.bdg-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.bdg-pink{background:var(--pink-bg);color:var(--pink);border:1px solid var(--pink-border)}
+.bdg-teal{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.bdg-gray{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+
+/* FORMS */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:.625rem}
+.fg label{font-size:11px;font-weight:500;color:var(--text2)}
+input,select,textarea{padding:.55rem .7rem;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Outfit',sans-serif;background:var(--surface2);color:var(--text);transition:border-color .15s;-webkit-appearance:none;appearance:none;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .65rem center;padding-right:2rem}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:.5rem .9rem;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;font-family:'Outfit',sans-serif;transition:all .15s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none}
+.btn-primary:active{opacity:.8}
+.btn-outline{background:transparent;color:var(--text2);border-color:var(--border)}
+.btn-outline:hover,.btn-outline:active{border-color:var(--accent2);color:var(--accent2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.btn-green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.btn-sm{padding:.3rem .6rem;font-size:11px}
+.btn-lg{padding:.75rem 1.25rem;font-size:14px;width:100%}
+
+/* ALERTS */
+.alert{padding:.65rem .875rem;border-radius:var(--radius);font-size:12px;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.alert-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.alert-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.alert-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.alert-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:100}
+@media(min-width:600px){.modal-bg{align-items:center;padding:1rem}}
+.modal{background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:1.5rem;width:100%;max-height:94vh;overflow-y:auto;border:1px solid var(--border);border-bottom:none}
+@media(min-width:600px){.modal{border-radius:var(--radius-xl);max-width:500px;border:1px solid var(--border)}}
+.modal-drag{width:36px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto .875rem}
+.modal-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;padding-top:.875rem;border-top:1px solid var(--border)}
+
+/* DATE RANGE BAR */
+.drbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:.75rem;background:var(--surface2);border-radius:var(--radius);margin-bottom:.875rem;border:1px solid var(--border)}
+.drbar input[type=date]{width:130px;padding:.4rem .55rem;font-size:12px}
+.drbar-lbl{font-size:11px;color:var(--text3);white-space:nowrap}
+
+/* BAR CHART */
+.bchart{display:flex;flex-direction:column;gap:9px}
+.brow{display:flex;align-items:center;gap:8px}
+.blbl{font-size:11px;color:var(--text2);width:90px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btrack{flex:1;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden;min-width:40px}
+.bfill{height:100%;border-radius:4px;transition:width .5s ease}
+.bval{font-size:11px;font-weight:600;min-width:75px;text-align:right;flex-shrink:0}
+
+/* GENDER TABS */
+.gtabs{display:flex;gap:6px;margin-bottom:.875rem;flex-wrap:wrap}
+.gtab{padding:.4rem .875rem;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all .15s;-webkit-tap-highlight-color:transparent}
+.gtab.active{background:var(--purple-bg);color:var(--accent2);border-color:var(--purple-border)}
+
+/* ATTENDANCE CLOCK */
+.clock-card{text-align:center;padding:1.75rem 1.25rem}
+.clock-name{font-size:18px;font-weight:600;margin-bottom:4px}
+.clock-date{font-size:12px;color:var(--text2);margin-bottom:1.5rem}
+.clock-status{font-size:13px;margin-bottom:1.25rem;padding:.5rem .875rem;border-radius:20px;display:inline-block}
+.clock-btn{padding:1rem 2rem;font-size:15px;font-weight:700;border-radius:var(--radius-lg);border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;min-width:180px}
+.clock-in-btn{background:linear-gradient(135deg,var(--green),#059669);color:#fff}
+.clock-out-btn{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff}
+
+/* BALANCE SHEET */
+.bal-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)}
+.bal-row:last-child{border-bottom:none}
+.bal-lbl{font-size:13px;color:var(--text2)}
+.bal-val{font-size:14px;font-weight:700}
+
+/* UTILS */
+.flex{display:flex}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}
+.items-center{align-items:center}.justify-between{justify-content:space-between}.flex-wrap{flex-wrap:wrap}
+.mb-1{margin-bottom:.5rem}.mb-2{margin-bottom:.875rem}.mt-1{margin-top:.5rem}
+.text-sm{font-size:11px}.text-xs{font-size:10px}.text-muted{color:var(--text2)}.text-dim{color:var(--text3)}
+.font-600{font-weight:600}.font-700{font-weight:700}.w-full{width:100%}
+.sg{display:flex;flex-direction:column;gap:.875rem}
+.low-row td{background:var(--red-bg) !important}
+.divider{height:1px;background:var(--border);margin:.875rem 0}
+.required-star{color:var(--red);margin-left:2px}
+</style>
+</head>
+<body>
+<div id="offline-bar" style="display:none;position:fixed;top:0;left:0;right:0;background:#334155;color:#94a3b8;text-align:center;padding:.35rem;font-size:11px;z-index:999;font-family:Outfit,sans-serif;">📵 Offline — using saved data</div>
+<div id="install-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid #334155;padding:.625rem 1rem;z-index:200;display:none;align-items:center;justify-content:space-between;gap:10px;font-family:Outfit,sans-serif;">
+  <span style="font-size:12px;color:#94a3b8;flex:1;">📲 Install Mubasher Thrift on your home screen</span>
+  <button onclick="dismissInstall()" style="padding:.3rem .65rem;border-radius:8px;border:1px solid #475569;background:transparent;color:#94a3b8;font-size:11px;cursor:pointer;font-family:Outfit,sans-serif;">Later</button>
+  <button onclick="triggerInstall()" style="padding:.3rem .75rem;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;">Install</button>
+</div>
+<div id="root"></div>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+window.addEventListener('online',()=>document.getElementById('offline-bar').style.display='none');
+window.addEventListener('offline',()=>document.getElementById('offline-bar').style.display='block');
+if(!navigator.onLine)document.getElementById('offline-bar').style.display='block';
+let _deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_deferredPrompt=e;const b=document.getElementById('install-bar');b.style.display='flex';});
+function triggerInstall(){if(_deferredPrompt){_deferredPrompt.prompt();_deferredPrompt.userChoice.then(()=>{_deferredPrompt=null;document.getElementById('install-bar').style.display='none';});}}
+function dismissInstall(){document.getElementById('install-bar').style.display='none';}
+window.addEventListener('appinstalled',()=>document.getElementById('install-bar').style.display='none');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useEffect,useCallback,useMemo}=React;
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const TODAY=new Date().toISOString().split('T')[0];
+const R=(n)=>'Rs. '+Math.round(Number(n)||0).toLocaleString('en-PK');
+const fmtDate=(d)=>{if(!d)return'—';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'});};
+const fmtTime=(ts)=>ts?new Date(ts).toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit'}):'—';
+const nDaysAgo=(n)=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0];};
+
+const EMP_NAME_KEY='mts_empname';
+const DEFAULT_EMP='Mubasher';
+
+const PAY={CASH:'Cash',EASYPAISA:'EasyPaisa',BANK:'Bank Transfer'};
+const PAY_COLOR={Cash:'green',EasyPaisa:'blue','Bank Transfer':'purple'};
+const PAY_ICON={Cash:'💵',EasyPaisa:'📱','Bank Transfer':'🏦'};
+
+// Default categories per gender
+const DEFAULT_CATS={
+  Gents:['Jeans','Panta Cotton Pants','Tee Shirts','Polos'],
+  Ladies:['Ladies Tops','Trousers','Plazo','Ladies Tees','Ladies Jeans','Kurti'],
+  Children:['Jeans','Pants'],
+};
+
+const FIXED_EXP_TYPES=['Rent','Employee Salary','Electricity'];
+const DAILY_EXP_TYPES=['Tea / Refreshment','Transport','Packaging','Other'];
+
+// ── STORAGE ────────────────────────────────────────────────────────────────
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+function useLS(k,d){
+  const [v,setV]=useState(()=>ld(k,d));
+  const set=useCallback(u=>setV(p=>{const n=typeof u==='function'?u(p):u;sv(k,n);return n;}),[k]);
+  return [v,set];
+}
+
+// ── SAMPLE DATA ────────────────────────────────────────────────────────────
+const INIT_INV=[
+  {id:1,gender:'Gents',cat:'Jeans',name:'Gents Jeans',cost:500,sell:900,qty:15,low:5},
+  {id:2,gender:'Gents',cat:'Panta Cotton Pants',name:'Panta Cotton Pants',cost:400,sell:700,qty:10,low:4},
+  {id:3,gender:'Gents',cat:'Tee Shirts',name:'Gents Tee Shirt',cost:250,sell:450,qty:20,low:6},
+  {id:4,gender:'Gents',cat:'Polos',name:'Polo Shirt',cost:350,sell:600,qty:12,low:4},
+  {id:5,gender:'Ladies',cat:'Ladies Tops',name:'Ladies Top',cost:300,sell:550,qty:18,low:5},
+  {id:6,gender:'Ladies',cat:'Trousers',name:'Ladies Trousers',cost:400,sell:700,qty:8,low:3},
+  {id:7,gender:'Ladies',cat:'Plazo',name:'Plazo',cost:350,sell:600,qty:10,low:4},
+  {id:8,gender:'Ladies',cat:'Ladies Tees',name:'Ladies Tee',cost:250,sell:400,qty:14,low:5},
+  {id:9,gender:'Ladies',cat:'Ladies Jeans',name:'Ladies Jeans',cost:500,sell:850,qty:6,low:3},
+  {id:10,gender:'Ladies',cat:'Kurti',name:'Kurti',cost:450,sell:800,qty:9,low:3},
+  {id:11,gender:'Children',cat:'Jeans',name:'Kids Jeans',cost:300,sell:500,qty:12,low:4},
+  {id:12,gender:'Children',cat:'Pants',name:'Kids Pants',cost:250,sell:400,qty:10,low:4},
+];
+const INIT_SALES=[
+  {id:1,date:TODAY,gender:'Gents',cat:'Jeans',item:'Gents Jeans',costPrice:500,sellPrice:900,qty:1,method:PAY.CASH,emp:DEFAULT_EMP},
+  {id:2,date:TODAY,gender:'Ladies',cat:'Kurti',item:'Kurti',costPrice:450,sellPrice:820,qty:1,method:PAY.EASYPAISA,emp:DEFAULT_EMP},
+];
+const INIT_EXP=[
+  {id:1,date:TODAY,type:'Rent',category:'fixed',amount:8000,desc:'Monthly rent',emp:'Admin'},
+  {id:2,date:TODAY,type:'Employee Salary',category:'fixed',amount:15000,desc:'Monthly salary',emp:'Admin'},
+];
+const INIT_ATT=[
+  {id:1,emp:DEFAULT_EMP,date:TODAY,inTs:new Date().setHours(9,0),outTs:null,inLoc:'Location captured',outLoc:null},
+];
+// ── BALANCE SHEET ──────────────────────────────────────────────────────────
+const INIT_BALANCE=[
+  {id:1,date:TODAY,totalSales:1720,cash:900,easypaisa:820,bank:0,expenses:200,note:'',submitted:true},
+];
+
+// ══════════════════════════════════════════════════════════════════════════
+// APP ROOT
+// ══════════════════════════════════════════════════════════════════════════
+function App(){
+  const [page,setPage]=useState('login');
+  const [role,setRole]=useState('');
+  const [nav,setNav]=useState('dashboard');
+  const [inventory,setInventory]=useLS('mts_inv',INIT_INV);
+  const [sales,setSales]=useLS('mts_sales',INIT_SALES);
+  const [expenses,setExpenses]=useLS('mts_exp',INIT_EXP);
+  const [attendance,setAttendance]=useLS('mts_att',INIT_ATT);
+  const [balance,setBalance]=useLS('mts_bal',INIT_BALANCE);
+  const [cats,setCats]=useLS('mts_cats',DEFAULT_CATS);
+  const [empName,setEmpName]=useLS(EMP_NAME_KEY,DEFAULT_EMP);
+  const [modal,setModal]=useState(null);
+
+  const login=(r)=>{setRole(r);setPage('app');setNav(r==='admin'?'dashboard':'attendance');};
+  const logout=()=>{setPage('login');setRole('');setModal(null);};
+
+  if(page==='login') return React.createElement(Login,{onLogin:login});
+
+  const lowItems=inventory.filter(i=>i.qty<=i.low);
+  const shared={inventory,setInventory,sales,setSales,expenses,setExpenses,attendance,setAttendance,balance,setBalance,cats,setCats,empName,setEmpName,modal,setModal,role,lowItems};
+
+  const adminNav=[
+    {id:'dashboard',ico:'◉',lbl:'Dashboard'},
+    {id:'attendance',ico:'⏱',lbl:'Attendance'},
+    {id:'inventory',ico:'📦',lbl:'Inventory'},
+    {id:'sales',ico:'🧾',lbl:'Sales'},
+    {id:'expenses',ico:'💸',lbl:'Expenses'},
+  ];
+  const empNav=[
+    {id:'attendance',ico:'⏱',lbl:'Attendance'},
+    {id:'inventory',ico:'📦',lbl:'Inventory'},
+    {id:'sales',ico:'🧾',lbl:'Sales'},
+    {id:'expenses',ico:'💸',lbl:'Expenses'},
+  ];
+  const navItems=role==='admin'?adminNav:empNav;
+  const titles={dashboard:'Dashboard',attendance:'Attendance',inventory:'Inventory',sales:'Sales',expenses:'Expenses'};
+
+  return React.createElement('div',{className:'app'},
+    // Sidebar (desktop)
+    React.createElement('aside',{className:'sidebar'},
+      React.createElement('div',{className:'sidebar-top'},
+        React.createElement('div',{className:'sidebar-shopname'},'Mubasher Thrift Store'),
+        React.createElement('div',{className:'sidebar-role'},role==='admin'?'Owner · Admin':'Employee')
+      ),
+      React.createElement('div',{style:{padding:'.5rem 0',flex:1}},
+        navItems.map(n=>React.createElement('button',{key:n.id,className:`nav-btn${nav===n.id?' active':''}`,onClick:()=>setNav(n.id)},
+          React.createElement('span',{className:'nav-ico'},n.ico),n.lbl
+        ))
+      ),
+      React.createElement('div',{className:'sidebar-bottom'},
+        React.createElement('button',{className:'logout-nav',onClick:logout},'↩ Sign Out')
+      )
+    ),
+    // Main
+    React.createElement('div',{className:'main'},
+      React.createElement('div',{className:'topbar'},
+        React.createElement('span',{className:'topbar-title'},titles[nav]||''),
+        React.createElement('div',{className:'flex gap-2 items-center'},
+          lowItems.length>0&&React.createElement('span',{className:'bdg bdg-red',style:{cursor:'pointer'},onClick:()=>setNav('inventory')},`⚠ ${lowItems.length} low`),
+          React.createElement('span',{className:'bdg bdg-purple'},role==='admin'?'👔 Admin':'🧑 Employee'),
+          React.createElement('button',{className:'btn btn-outline btn-sm',onClick:logout},'Exit')
+        )
+      ),
+      React.createElement('div',{className:'content'},
+        nav==='dashboard'&&role==='admin'&&React.createElement(Dashboard,{...shared,setNav}),
+        nav==='attendance'&&React.createElement(AttendancePage,shared),
+        nav==='inventory'&&React.createElement(InventoryPage,shared),
+        nav==='sales'&&React.createElement(SalesPage,shared),
+        nav==='expenses'&&React.createElement(ExpensesPage,shared),
+      )
+    ),
+    // Bottom nav (mobile)
+    React.createElement('nav',{className:'bottom-nav'},
+      navItems.map(n=>React.createElement('button',{key:n.id,className:`bnav-btn${nav===n.id?' active':''}`,onClick:()=>setNav(n.id)},
+        React.createElement('span',{className:'bnav-ico'},n.ico),
+        React.createElement('span',{className:'bnav-lbl'},n.lbl)
+      ))
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════════════════
+function Login({onLogin}){
+  const [sel,setSel]=useState('');
+  return React.createElement('div',{className:'login-wrap'},
+    React.createElement('div',{className:'login-glow1'}),
+    React.createElement('div',{className:'login-glow2'}),
+    React.createElement('div',{className:'login-card'},
+      React.createElement('div',{className:'shop-name'},'Mubasher Thrift Store'),
+      React.createElement('div',{className:'shop-sub'},'Thrift Clothing · Business Management'),
+      React.createElement('p',{style:{fontSize:12,color:'var(--text2)',marginBottom:'.875rem',fontWeight:500}},'Select your role to continue'),
+      React.createElement('div',{className:'role-grid'},
+        React.createElement('div',{className:`role-card${sel==='admin'?' sel':''}`,onClick:()=>setSel('admin')},
+          React.createElement('div',{className:'role-emoji'},'👔'),
+          React.createElement('div',{className:'role-name'},'Owner'),
+          React.createElement('div',{className:'role-hint'},'Full Access')
+        ),
+        React.createElement('div',{className:`role-card${sel==='employee'?' sel':''}`,onClick:()=>setSel('employee')},
+          React.createElement('div',{className:'role-emoji'},'🧑‍💼'),
+          React.createElement('div',{className:'role-name'},'Employee'),
+          React.createElement('div',{className:'role-hint'},'Limited Access')
+        )
+      ),
+      React.createElement('button',{className:'login-go',disabled:!sel,onClick:()=>sel&&onLogin(sel)},'Enter Store →')
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DASHBOARD (Admin only)
+// ══════════════════════════════════════════════════════════════════════════
+function Dashboard({sales,expenses,inventory,lowItems,balance,setNav}){
+  const [range,setRange]=useState('today');
+  const [from,setFrom]=useState(nDaysAgo(29));
+  const [to,setTo]=useState(TODAY);
+
+  const getRange=()=>{
+    if(range==='today') return [TODAY,TODAY];
+    if(range==='7d') return [nDaysAgo(6),TODAY];
+    if(range==='30d') return [nDaysAgo(29),TODAY];
+    return [from,to];
+  };
+  const [f,t]=getRange();
+  const inR=(d)=>d>=f&&d<=t;
+
+  const rSales=sales.filter(s=>inR(s.date));
+  const rExp=expenses.filter(e=>inR(e.date));
+
+  const totalSales=rSales.reduce((a,s)=>a+(s.sellPrice*s.qty),0);
+  const totalCost=rSales.reduce((a,s)=>a+(s.costPrice*s.qty),0);
+  const totalExp=rExp.reduce((a,e)=>a+e.amount,0);
+  const grossProfit=totalSales-totalCost;
+  const netProfit=totalSales-totalCost-totalExp;
+  const todaySales=sales.filter(s=>s.date===TODAY).reduce((a,s)=>a+(s.sellPrice*s.qty),0);
+
+  const byMethod={};
+  Object.values(PAY).forEach(m=>{byMethod[m]=rSales.filter(s=>s.method===m).reduce((a,s)=>a+(s.sellPrice*s.qty),0);});
+  const maxM=Math.max(...Object.values(byMethod),1);
+
+  // Daily sales last 7 days
+  const last7=Array.from({length:7},(_,i)=>nDaysAgo(6-i));
+  const dailyData=last7.map(d=>({d,v:sales.filter(s=>s.date===d).reduce((a,s)=>a+(s.sellPrice*s.qty),0)}));
+  const maxD=Math.max(...dailyData.map(x=>x.v),1);
+
+  // Top items
+  const itemMap={};
+  rSales.forEach(s=>{itemMap[s.item]=(itemMap[s.item]||0)+(s.sellPrice*s.qty);});
+  const topItems=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxI=topItems[0]?.[1]||1;
+
+  // Expense breakdown
+  const expByType={};
+  [...FIXED_EXP_TYPES,...DAILY_EXP_TYPES].forEach(t=>{expByType[t]=rExp.filter(e=>e.type===t).reduce((a,e)=>a+e.amount,0);});
+  const maxE=Math.max(...Object.values(expByType),1);
+
+  // Balance sheet summary
+  const rBal=balance.filter(b=>inR(b.date));
+  const balCash=rBal.reduce((a,b)=>a+b.cash,0);
+  const balEP=rBal.reduce((a,b)=>a+b.easypaisa,0);
+  const balBank=rBal.reduce((a,b)=>a+b.bank,0);
+
+  const invVal=inventory.reduce((a,i)=>a+(i.cost*i.qty),0);
+
+  return React.createElement('div',{className:'sg'},
+    // Range selector
+    React.createElement('div',{className:'drbar'},
+      React.createElement('span',{className:'drbar-lbl'},'Show:'),
+      ['today','7d','30d','custom'].map(r=>React.createElement('button',{key:r,className:`btn btn-sm ${range===r?'btn-primary':'btn-outline'}`,onClick:()=>setRange(r)},
+        {today:'Today','7d':'7 Days','30d':'30 Days',custom:'Custom'}[r]
+      )),
+      range==='custom'&&React.createElement(React.Fragment,null,
+        React.createElement('input',{type:'date',value:from,onChange:e=>setFrom(e.target.value),style:{width:130}}),
+        React.createElement('span',{className:'drbar-lbl'},'to'),
+        React.createElement('input',{type:'date',value:to,onChange:e=>setTo(e.target.value),style:{width:130}})
+      )
+    ),
+
+    // Key metrics
+    React.createElement('div',{className:'mg'},
+      React.createElement('div',{className:'mc green'},React.createElement('div',{className:'mc-ico'},'💰'),React.createElement('div',{className:'mc-lbl'},'Total Sales'),React.createElement('div',{className:'mc-val'},R(totalSales)),React.createElement('div',{className:'mc-sub'},`Today: ${R(todaySales)}`)),
+      React.createElement('div',{className:'mc red'},React.createElement('div',{className:'mc-ico'},'📤'),React.createElement('div',{className:'mc-lbl'},'Total Expenses'),React.createElement('div',{className:'mc-val'},R(totalExp))),
+      React.createElement('div',{className:'mc amber'},React.createElement('div',{className:'mc-ico'},'📊'),React.createElement('div',{className:'mc-lbl'},'Gross Profit'),React.createElement('div',{className:'mc-val'},R(grossProfit)),React.createElement('div',{className:'mc-sub'},'Sales minus cost')),
+      React.createElement('div',{className:`mc ${netProfit>=0?'teal':'red'}`},React.createElement('div',{className:'mc-ico'},netProfit>=0?'📈':'📉'),React.createElement('div',{className:'mc-lbl'},'Net Profit'),React.createElement('div',{className:'mc-val'},R(netProfit)),React.createElement('div',{className:'mc-sub'},'After all expenses')),
+      React.createElement('div',{className:'mc blue'},React.createElement('div',{className:'mc-ico'},'📦'),React.createElement('div',{className:'mc-lbl'},'Stock Value'),React.createElement('div',{className:'mc-val'},R(invVal))),
+      React.createElement('div',{className:`mc ${lowItems.length>0?'red':'green'}`},React.createElement('div',{className:'mc-ico'},'⚠'),React.createElement('div',{className:'mc-lbl'},'Low Stock'),React.createElement('div',{className:'mc-val'},lowItems.length),React.createElement('div',{className:'mc-sub'},lowItems.length>0?'Need restocking':'All good'))
+    ),
+
+    // Payment breakdown
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'💳 Collections by Payment Method')),
+      React.createElement('div',{className:'mg',style:{marginBottom:'.5rem'}},
+        Object.values(PAY).map(m=>React.createElement('div',{key:m,className:`mc ${PAY_COLOR[m]==='green'?'green':PAY_COLOR[m]==='blue'?'blue':'purple'}`,style:{padding:'.75rem'}},
+          React.createElement('div',{className:'mc-lbl'},PAY_ICON[m]+' '+m),
+          React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(byMethod[m])),
+          React.createElement('div',{className:'mc-sub'},rSales.filter(s=>s.method===m).length+' sales')
+        ))
+      ),
+      React.createElement('div',{className:'bchart'},
+        Object.values(PAY).map(m=>React.createElement('div',{key:m,className:'brow'},
+          React.createElement('div',{className:'blbl'},m),
+          React.createElement('div',{className:'btrack'},React.createElement('div',{className:'bfill',style:{width:`${(byMethod[m]/maxM*100).toFixed(0)}%`,background:m===PAY.CASH?'var(--green)':m===PAY.EASYPAISA?'var(--blue)':'var(--purple)'}})),
+          React.createElement('div',{className:'bval',style:{color:m===PAY.CASH?'var(--green)':m===PAY.EASYPAISA?'var(--blue)':'var(--purple)'}},R(byMethod[m]))
+        ))
+      )
+    ),
+
+    // Cash balance summary (from balance sheets)
+    rBal.length>0&&React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'🗂 Balance Sheet Summary')),
+      React.createElement('div',{className:'flex gap-2 flex-wrap'},
+        React.createElement('div',{className:'mc green',style:{flex:1,minWidth:110}},React.createElement('div',{className:'mc-lbl'},'Cash In Hand'),React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(balCash))),
+        React.createElement('div',{className:'mc blue',style:{flex:1,minWidth:110}},React.createElement('div',{className:'mc-lbl'},'EasyPaisa'),React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(balEP))),
+        React.createElement('div',{className:'mc purple',style:{flex:1,minWidth:110}},React.createElement('div',{className:'mc-lbl'},'Bank Transfer'),React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(balBank)))
+      )
+    ),
+
+    // Daily trend
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'📊 Daily Sales — Last 7 Days')),
+      React.createElement('div',{style:{display:'flex',gap:6,alignItems:'flex-end',height:80,padding:'0 4px'}},
+        dailyData.map(({d,v})=>React.createElement('div',{key:d,style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3}},
+          React.createElement('div',{style:{fontSize:9,color:'var(--green)',fontWeight:600,minHeight:12}},v>0?R(v):''),
+          React.createElement('div',{style:{width:'100%',background:d===TODAY?'var(--green)':'var(--teal)',borderRadius:'3px 3px 0 0',height:`${Math.max(3,v/maxD*65).toFixed(0)}px`,transition:'height .4s',opacity:d===TODAY?1:.65}}),
+          React.createElement('div',{style:{fontSize:9,color:'var(--text3)',textAlign:'center',marginTop:2}},d.slice(5).replace('-','/'))
+        ))
+      )
+    ),
+
+    // Top items
+    topItems.length>0&&React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'🏆 Top Selling Items')),
+      React.createElement('div',{className:'bchart'},
+        topItems.map(([item,total],i)=>React.createElement('div',{key:item,className:'brow'},
+          React.createElement('div',{className:'blbl'},`#${i+1} ${item}`),
+          React.createElement('div',{className:'btrack'},React.createElement('div',{className:'bfill',style:{width:`${(total/maxI*100).toFixed(0)}%`,background:'var(--amber)'}})),
+          React.createElement('div',{className:'bval',style:{color:'var(--amber)'}},R(total))
+        ))
+      )
+    ),
+
+    // Expenses breakdown
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'📤 Expenses Breakdown')),
+      React.createElement('div',{className:'bchart'},
+        Object.entries(expByType).filter(([,v])=>v>0).map(([type,val])=>React.createElement('div',{key:type,className:'brow'},
+          React.createElement('div',{className:'blbl'},type),
+          React.createElement('div',{className:'btrack'},React.createElement('div',{className:'bfill',style:{width:`${(val/maxE*100).toFixed(0)}%`,background:'var(--red)'}})),
+          React.createElement('div',{className:'bval',style:{color:'var(--red)'}},R(val))
+        ))
+      )
+    ),
+
+    // Low stock
+    lowItems.length>0&&React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},
+        React.createElement('span',{className:'card-title',style:{color:'var(--red)'}},'⚠ Low Stock Alerts'),
+        React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>setNav('inventory')},'View All')
+      ),
+      React.createElement('div',{className:'tbl-wrap'},
+        React.createElement('table',null,
+          React.createElement('thead',null,React.createElement('tr',null,['Item','Gender','Category','Qty','Min'].map(h=>React.createElement('th',{key:h},h)))),
+          React.createElement('tbody',null,lowItems.map(i=>React.createElement('tr',{key:i.id,className:'low-row'},
+            React.createElement('td',null,i.name),React.createElement('td',null,i.gender),React.createElement('td',null,i.cat),
+            React.createElement('td',null,React.createElement('span',{className:'bdg bdg-red'},i.qty)),
+            React.createElement('td',null,i.low)
+          )))
+        )
+      )
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════════════════════════════════════════
+function AttendancePage({attendance,setAttendance,empName,setEmpName,role}){
+  const [editName,setEditName]=useState(false);
+  const [nameInput,setNameInput]=useState(empName);
+  const [histDate,setHistDate]=useState(TODAY);
+
+  const todayRec=attendance.find(a=>a.emp===empName&&a.date===TODAY);
+  const isClockedIn=todayRec&&todayRec.inTs&&!todayRec.outTs;
+  const isDone=todayRec&&todayRec.outTs;
+
+  const getLocation=(cb)=>{
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        p=>cb(`${Math.abs(p.coords.latitude).toFixed(4)}°${p.coords.latitude>=0?'N':'S'}, ${Math.abs(p.coords.longitude).toFixed(4)}°${p.coords.longitude>=0?'E':'W'}`),
+        ()=>cb('Location unavailable'),{timeout:5000}
+      );
+    } else cb('GPS not supported');
+  };
+
+  const clockIn=()=>getLocation(loc=>setAttendance(p=>[...p,{id:Date.now(),emp:empName,date:TODAY,inTs:Date.now(),outTs:null,inLoc:loc,outLoc:null}]));
+  const clockOut=()=>getLocation(loc=>setAttendance(p=>p.map(a=>a.id===todayRec.id?{...a,outTs:Date.now(),outLoc:loc}:a)));
+  const saveName=()=>{if(nameInput.trim()){setEmpName(nameInput.trim());setEditName(false);}};
+
+  const dur=(a)=>{
+    if(!a||!a.outTs) return null;
+    const m=Math.round((a.outTs-a.inTs)/60000);
+    return `${Math.floor(m/60)}h ${m%60}m`;
+  };
+
+  const histRecs=attendance.filter(a=>a.emp===empName&&a.date===histDate);
+
+  return React.createElement('div',{className:'sg'},
+    // Employee name
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-title mb-1'},'Employee'),
+      editName
+        ?React.createElement('div',{className:'flex gap-2 items-center'},
+          React.createElement('input',{value:nameInput,onChange:e=>setNameInput(e.target.value),autoFocus:true,placeholder:'Employee name',style:{flex:1}}),
+          React.createElement('button',{className:'btn btn-primary btn-sm',onClick:saveName},'Save'),
+          React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>setEditName(false)},'Cancel')
+        )
+        :React.createElement('div',{className:'flex gap-2 items-center'},
+          React.createElement('span',{style:{fontSize:16,fontWeight:600}},empName),
+          React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>{setNameInput(empName);setEditName(true);}},'✏ Edit')
+        )
+    ),
+
+    // Clock card
+    React.createElement('div',{className:'card clock-card'},
+      React.createElement('div',{className:'clock-name'},empName),
+      React.createElement('div',{className:'clock-date'},new Date().toLocaleDateString('en-PK',{weekday:'long',year:'numeric',month:'long',day:'numeric'})),
+      !isClockedIn&&!isDone&&React.createElement('div',{className:'clock-status bdg bdg-gray'},'Not clocked in today'),
+      isClockedIn&&React.createElement('div',{className:'clock-status bdg bdg-green'},'⏱ Currently clocked in since '+fmtTime(todayRec.inTs)),
+      isDone&&React.createElement('div',{className:'clock-status bdg bdg-blue'},'✓ Clocked out at '+fmtTime(todayRec.outTs)),
+      React.createElement('div',{style:{marginTop:'1rem'}},
+        !isClockedIn&&!isDone&&React.createElement('button',{className:'clock-btn clock-in-btn',onClick:clockIn},'⏱ Clock In'),
+        isClockedIn&&React.createElement('button',{className:'clock-btn clock-out-btn',onClick:clockOut},'⏹ Clock Out'),
+        isDone&&React.createElement('div',{className:'alert alert-green',style:{display:'inline-flex',margin:0}},'✓ Attendance complete for today — '+dur(todayRec))
+      )
+    ),
+
+    // Attendance history
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},
+        React.createElement('span',{className:'card-title'},'Attendance History'),
+        React.createElement('input',{type:'date',value:histDate,onChange:e=>setHistDate(e.target.value),style:{width:135}})
+      ),
+      histRecs.length===0
+        ?React.createElement('p',{className:'text-sm text-muted'},'No record for this date.')
+        :React.createElement('div',{className:'tbl-wrap'},
+          React.createElement('table',null,
+            React.createElement('thead',null,React.createElement('tr',null,['Date','Clock In','Clock Out','Duration','In Location','Status'].map(h=>React.createElement('th',{key:h},h)))),
+            React.createElement('tbody',null,histRecs.map(a=>React.createElement('tr',{key:a.id},
+              React.createElement('td',null,fmtDate(a.date)),
+              React.createElement('td',null,fmtTime(a.inTs)),
+              React.createElement('td',null,fmtTime(a.outTs)),
+              React.createElement('td',null,dur(a)||'Active'),
+              React.createElement('td',{style:{fontSize:10,color:'var(--text3)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},a.inLoc||'—'),
+              React.createElement('td',null,a.outTs?React.createElement('span',{className:'bdg bdg-green'},'Done'):React.createElement('span',{className:'bdg bdg-amber'},'Active'))
+            )))
+          )
+        )
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════════════════════════════════════
+function InventoryPage({inventory,setInventory,role,lowItems,modal,setModal,cats,setCats}){
+  const [gFilter,setGFilter]=useState('');
+  const [cFilter,setCFilter]=useState('');
+  const [addForm,setAddForm]=useState({gender:'Gents',cat:'',name:'',cost:'',sell:'',qty:'',low:'5'});
+  const [catForm,setCatForm]=useState({gender:'Gents',name:''});
+  const [editMap,setEditMap]=useState({});
+
+  const genders=['Gents','Ladies','Children'];
+  const filtered=inventory.filter(i=>(!gFilter||i.gender===gFilter)&&(!cFilter||i.cat===cFilter));
+  const allCatsFlat=[...new Set(inventory.map(i=>i.cat))];
+
+  const startEdit=(id,field,val)=>setEditMap(p=>({...p,[`${id}_${field}`]:String(val)}));
+  const saveEdit=(id,field)=>{
+    const v=editMap[`${id}_${field}`];
+    if(v===undefined) return;
+    setInventory(p=>p.map(i=>i.id===id?{...i,[field]:['cost','sell','qty','low'].includes(field)?Math.round(+v):v}:i));
+    setEditMap(p=>{const n={...p};delete n[`${id}_${field}`];return n;});
+  };
+  const cancelEdit=(id,field)=>setEditMap(p=>{const n={...p};delete n[`${id}_${field}`];return n;});
+
+  const InlineEdit=({id,field,color,prefix})=>{
+    const key=`${id}_${field}`;
+    const item=inventory.find(i=>i.id===id);
+    return editMap[key]!==undefined
+      ?React.createElement('div',{className:'flex gap-1 items-center'},
+        React.createElement('input',{type:'number',value:editMap[key],onChange:e=>setEditMap(p=>({...p,[key]:e.target.value})),style:{width:70,padding:'3px 6px',fontSize:12},autoFocus:true}),
+        React.createElement('button',{className:'btn btn-primary btn-sm',onClick:()=>saveEdit(id,field),style:{padding:'3px 7px'}},'✓'),
+        React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>cancelEdit(id,field),style:{padding:'3px 7px'}},'✕')
+      )
+      :React.createElement('div',{className:'flex gap-1 items-center'},
+        React.createElement('span',{style:{fontWeight:600,color:color||'var(--text)'}},prefix?(prefix+(Math.round(item[field]).toLocaleString('en-PK'))):Math.round(item[field]).toLocaleString('en-PK')),
+        React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>startEdit(id,field,item[field]),style:{fontSize:10,padding:'2px 6px'}},'✏')
+      );
+  };
+
+  const addItem=()=>{
+    if(!addForm.name||!addForm.sell||!addForm.qty) return;
+    setInventory(p=>[...p,{id:Date.now(),gender:addForm.gender,cat:addForm.cat||(cats[addForm.gender]?.[0]||''),name:addForm.name,cost:Math.round(+addForm.cost)||0,sell:Math.round(+addForm.sell),qty:Math.round(+addForm.qty),low:Math.round(+addForm.low)||5}]);
+    setAddForm({gender:'Gents',cat:'',name:'',cost:'',sell:'',qty:'',low:'5'});
+    setModal(null);
+  };
+
+  const addCat=()=>{
+    if(!catForm.name.trim()) return;
+    const g=catForm.gender;
+    if(cats[g]?.includes(catForm.name.trim())) return;
+    setCats(p=>({...p,[g]:[...(p[g]||[]),catForm.name.trim()]}));
+    setCatForm(f=>({...f,name:''}));
+  };
+  const delCat=(g,c)=>{
+    if(window.confirm(`Remove "${c}" from ${g}?`)) setCats(p=>({...p,[g]:(p[g]||[]).filter(x=>x!==c)}));
+  };
+
+  const gBadgeColor={Gents:'blue',Ladies:'pink',Children:'amber'};
+
+  return React.createElement('div',{className:'sg'},
+    lowItems.length>0&&React.createElement('div',{className:'alert alert-red'},'⚠ '+lowItems.length+' items are low on stock.'),
+
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},
+        React.createElement('span',{className:'card-title'},'Inventory'),
+        React.createElement('div',{className:'flex gap-2'},
+          role==='admin'&&React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>setModal('manageCats')},'⚙ Categories'),
+          role==='admin'&&React.createElement('button',{className:'btn btn-primary btn-sm',onClick:()=>setModal('addItem')},'+ Add Item')
+        )
+      ),
+
+      // Gender tabs
+      React.createElement('div',{className:'gtabs'},
+        React.createElement('span',{className:`gtab${!gFilter?' active':''}`,onClick:()=>{setGFilter('');setCFilter('');}},`All (${inventory.length})`),
+        genders.map(g=>React.createElement('span',{key:g,className:`gtab${gFilter===g?' active':''}`,onClick:()=>{setGFilter(g);setCFilter('');}},`${g} (${inventory.filter(i=>i.gender===g).length})`))
+      ),
+
+      // Category filter
+      gFilter&&React.createElement('div',{className:'flex gap-2 mb-2 flex-wrap'},
+        React.createElement('span',{className:`gtab${!cFilter?' active':''}`,onClick:()=>setCFilter('')},'All '+gFilter),
+        (cats[gFilter]||[]).map(c=>React.createElement('span',{key:c,className:`gtab${cFilter===c?' active':''}`,onClick:()=>setCFilter(c)},c))
+      ),
+
+      React.createElement('div',{className:'tbl-wrap'},
+        React.createElement('table',null,
+          React.createElement('thead',null,React.createElement('tr',null,
+            ['Item','Gender','Category',role==='admin'?'Cost':'null','Sell Price','Qty','Min Stock','Status'].filter(h=>h!=='null').map(h=>React.createElement('th',{key:h},h))
+          )),
+          React.createElement('tbody',null,filtered.map(i=>{
+            const low=i.qty<=i.low;
+            return React.createElement('tr',{key:i.id,className:low?'low-row':''},
+              React.createElement('td',null,React.createElement('span',{style:{fontWeight:500}},i.name)),
+              React.createElement('td',null,React.createElement('span',{className:`bdg bdg-${gBadgeColor[i.gender]||'gray'}`},i.gender)),
+              React.createElement('td',null,i.cat),
+              role==='admin'&&React.createElement('td',null,React.createElement(InlineEdit,{id:i.id,field:'cost',prefix:'Rs.'})),
+              React.createElement('td',null,React.createElement(InlineEdit,{id:i.id,field:'sell',color:'var(--green)',prefix:'Rs.'})),
+              React.createElement('td',null,React.createElement(InlineEdit,{id:i.id,field:'qty',color:low?'var(--red)':'var(--text)'})),
+              React.createElement('td',null,React.createElement(InlineEdit,{id:i.id,field:'low',color:'var(--amber)'})),
+              React.createElement('td',null,low?React.createElement('span',{className:'bdg bdg-red'},'Low'):React.createElement('span',{className:'bdg bdg-green'},'OK'))
+            );
+          }))
+        )
+      )
+    ),
+
+    // Add Item Modal
+    modal==='addItem'&&React.createElement('div',{className:'modal-bg',onClick:e=>e.target.className==='modal-bg'&&setModal(null)},
+      React.createElement('div',{className:'modal'},
+        React.createElement('div',{className:'modal-drag'}),
+        React.createElement('div',{className:'modal-title'},'Add New Item'),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Gender'),React.createElement('select',{value:addForm.gender,onChange:e=>setAddForm(f=>({...f,gender:e.target.value,cat:''}))},genders.map(g=>React.createElement('option',{key:g},g)))),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Category'),React.createElement('select',{value:addForm.cat||(cats[addForm.gender]?.[0]||''),onChange:e=>setAddForm(f=>({...f,cat:e.target.value}))},(cats[addForm.gender]||[]).map(c=>React.createElement('option',{key:c},c)))),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Item Name'),React.createElement('input',{value:addForm.name,onChange:e=>setAddForm(f=>({...f,name:e.target.value})),placeholder:'e.g. Slim Fit Jeans'})),
+        React.createElement('div',{className:'flex gap-2'},
+          React.createElement('div',{className:'fg',style:{flex:1}},React.createElement('label',null,'Cost Price (Rs.)'),React.createElement('input',{type:'number',value:addForm.cost,onChange:e=>setAddForm(f=>({...f,cost:e.target.value})),placeholder:'0'})),
+          React.createElement('div',{className:'fg',style:{flex:1}},React.createElement('label',null,'Sell Price (Rs.)'),React.createElement('input',{type:'number',value:addForm.sell,onChange:e=>setAddForm(f=>({...f,sell:e.target.value})),placeholder:'0'}))
+        ),
+        React.createElement('div',{className:'flex gap-2'},
+          React.createElement('div',{className:'fg',style:{flex:1}},React.createElement('label',null,'Qty'),React.createElement('input',{type:'number',value:addForm.qty,onChange:e=>setAddForm(f=>({...f,qty:e.target.value})),placeholder:'0'})),
+          React.createElement('div',{className:'fg',style:{flex:1}},React.createElement('label',null,'Low Stock Alert'),React.createElement('input',{type:'number',value:addForm.low,onChange:e=>setAddForm(f=>({...f,low:e.target.value}))}))
+        ),
+        React.createElement('div',{className:'modal-footer'},
+          React.createElement('button',{className:'btn btn-outline',onClick:()=>setModal(null)},'Cancel'),
+          React.createElement('button',{className:'btn btn-primary',onClick:addItem},'Add Item')
+        )
+      )
+    ),
+
+    // Manage Categories Modal (Admin only)
+    modal==='manageCats'&&React.createElement('div',{className:'modal-bg',onClick:e=>e.target.className==='modal-bg'&&setModal(null)},
+      React.createElement('div',{className:'modal'},
+        React.createElement('div',{className:'modal-drag'}),
+        React.createElement('div',{className:'modal-title'},'Manage Categories'),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Gender'),React.createElement('select',{value:catForm.gender,onChange:e=>setCatForm(f=>({...f,gender:e.target.value}))},genders.map(g=>React.createElement('option',{key:g},g)))),
+        React.createElement('div',{className:'flex gap-2 mb-2'},
+          React.createElement('input',{value:catForm.name,onChange:e=>setCatForm(f=>({...f,name:e.target.value})),placeholder:'New category name...',style:{flex:1}}),
+          React.createElement('button',{className:'btn btn-primary',onClick:addCat},'Add')
+        ),
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:6,maxHeight:300,overflowY:'auto'}},
+          (cats[catForm.gender]||[]).map(c=>React.createElement('div',{key:c,className:'flex items-center justify-between',style:{padding:'.5rem .75rem',background:'var(--surface2)',borderRadius:'var(--radius)',border:'1px solid var(--border)'}},
+            React.createElement('span',{style:{fontSize:13}},c),
+            React.createElement('button',{className:'btn btn-danger btn-sm',onClick:()=>delCat(catForm.gender,c)},'Remove')
+          ))
+        ),
+        React.createElement('div',{className:'modal-footer'},
+          React.createElement('button',{className:'btn btn-primary',onClick:()=>setModal(null)},'Done')
+        )
+      )
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════════════════════════════════════
+function SalesPage({sales,setSales,inventory,setInventory,balance,setBalance,role,empName,modal,setModal,cats}){
+  const [gFilter,setGFilter]=useState('Gents');
+  const [sForm,setSForm]=useState({date:TODAY,gender:'Gents',cat:'',itemId:'',qty:'1',salePrice:'',method:PAY.CASH});
+  const [balForm,setBalForm]=useState({date:TODAY,cash:'',easypaisa:'',bank:'',expenses:'',note:''});
+  const [viewDate,setViewDate]=useState(TODAY);
+
+  const selItem=inventory.find(i=>i.id===+sForm.itemId);
+  const catItems=inventory.filter(i=>i.gender===sForm.gender&&(!sForm.cat||i.cat===sForm.cat)&&i.qty>0);
+
+  // Set default salePrice when item changes
+  useEffect(()=>{
+    if(selItem) setSForm(f=>({...f,salePrice:String(selItem.sell)}));
+  },[sForm.itemId]);
+
+  const addSale=()=>{
+    if(!selItem||+sForm.qty<1) return;
+    if(selItem.qty<+sForm.qty){alert(`Only ${selItem.qty} left in stock!`);return;}
+    const sp=Math.round(+sForm.salePrice||selItem.sell);
+    setSales(p=>[{id:Date.now(),date:sForm.date,gender:sForm.gender,cat:selItem.cat,item:selItem.name,costPrice:selItem.cost,sellPrice:sp,qty:+sForm.qty,method:sForm.method,emp:empName},...p]);
+    setInventory(p=>p.map(i=>i.id===selItem.id?{...i,qty:i.qty-+sForm.qty}:i));
+    setSForm(f=>({...f,itemId:'',qty:'1',salePrice:''}));
+    setModal(null);
+  };
+
+  const submitBalance=()=>{
+    const totalIn=Math.round(+balForm.cash||0)+Math.round(+balForm.easypaisa||0)+Math.round(+balForm.bank||0);
+    const todaySalesTotal=sales.filter(s=>s.date===balForm.date).reduce((a,s)=>a+(s.sellPrice*s.qty),0);
+    setBalance(p=>[{id:Date.now(),date:balForm.date,totalSales:todaySalesTotal,cash:Math.round(+balForm.cash||0),easypaisa:Math.round(+balForm.easypaisa||0),bank:Math.round(+balForm.bank||0),expenses:Math.round(+balForm.expenses||0),collectedTotal:totalIn,note:balForm.note,submitted:true},...p.filter(b=>b.date!==balForm.date)]);
+    setBalForm({date:TODAY,cash:'',easypaisa:'',bank:'',expenses:'',note:''});
+    setModal(null);
+  };
+
+  const todaySales=sales.filter(s=>s.date===viewDate);
+  const todayTotal=todaySales.reduce((a,s)=>a+(s.sellPrice*s.qty),0);
+  const todayBal=balance.find(b=>b.date===viewDate);
+  const methodColor={Cash:'bdg-green',EasyPaisa:'bdg-blue','Bank Transfer':'bdg-purple'};
+
+  const genders=['Gents','Ladies','Children'];
+
+  return React.createElement('div',{className:'sg'},
+    // Employee: add sale + balance sheet
+    role==='employee'&&React.createElement(React.Fragment,null,
+      React.createElement('div',{className:'flex gap-2 flex-wrap'},
+        React.createElement('button',{className:'btn btn-primary',style:{flex:1},onClick:()=>setModal('addSale')},'+ Record Sale'),
+        React.createElement('button',{className:'btn btn-outline',style:{flex:1},onClick:()=>setModal('balance')},'🗂 Submit Daily Balance')
+      )
+    ),
+
+    // Day selector
+    React.createElement('div',{className:'card',style:{padding:'.75rem'}},
+      React.createElement('div',{className:'flex gap-2 items-center flex-wrap'},
+        React.createElement('span',{style:{fontSize:12,color:'var(--text2)',fontWeight:500}},'View Date:'),
+        React.createElement('input',{type:'date',value:viewDate,onChange:e=>setViewDate(e.target.value),style:{width:140}}),
+        React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>setViewDate(TODAY)},'Today')
+      )
+    ),
+
+    // Today summary
+    React.createElement('div',{className:'mg'},
+      React.createElement('div',{className:'mc green'},React.createElement('div',{className:'mc-ico'},'💰'),React.createElement('div',{className:'mc-lbl'},'Sales Total'),React.createElement('div',{className:'mc-val'},R(todayTotal))),
+      React.createElement('div',{className:'mc blue'},React.createElement('div',{className:'mc-ico'},'🧾'),React.createElement('div',{className:'mc-lbl'},'Transactions'),React.createElement('div',{className:'mc-val'},todaySales.length)),
+      role==='admin'&&React.createElement('div',{className:'mc amber'},React.createElement('div',{className:'mc-ico'},'📊'),React.createElement('div',{className:'mc-lbl'},'Total Cost'),React.createElement('div',{className:'mc-val'},R(todaySales.reduce((a,s)=>a+(s.costPrice*s.qty),0)))),
+      role==='admin'&&React.createElement('div',{className:'mc teal'},React.createElement('div',{className:'mc-ico'},'📈'),React.createElement('div',{className:'mc-lbl'},'Gross Margin'),React.createElement('div',{className:'mc-val'},R(todaySales.reduce((a,s)=>a+((s.sellPrice-s.costPrice)*s.qty),0))))
+    ),
+
+    // Balance sheet for selected day
+    todayBal&&React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},React.createElement('span',{className:'card-title'},'🗂 Balance Sheet — '+fmtDate(viewDate)),React.createElement('span',{className:'bdg bdg-green'},'Submitted')),
+      React.createElement('div',null,
+        [{l:'Sales Total (System)',v:R(todayBal.totalSales),c:'var(--green)'},{l:'Cash Collected',v:R(todayBal.cash),c:'var(--green)'},{l:'EasyPaisa Collected',v:R(todayBal.easypaisa),c:'var(--blue)'},{l:'Bank Transfer',v:R(todayBal.bank),c:'var(--purple)'},{l:'Total Collected',v:R(todayBal.cash+todayBal.easypaisa+todayBal.bank),c:'var(--teal)'},{l:'Daily Expenses',v:R(todayBal.expenses),c:'var(--red)'},{l:'Difference',v:R((todayBal.cash+todayBal.easypaisa+todayBal.bank)-todayBal.totalSales),c:Math.abs((todayBal.cash+todayBal.easypaisa+todayBal.bank)-todayBal.totalSales)<10?'var(--green)':'var(--red)'}].map(row=>
+          React.createElement('div',{key:row.l,className:'bal-row'},
+            React.createElement('span',{className:'bal-lbl'},row.l),
+            React.createElement('span',{className:'bal-val',style:{color:row.c}},row.v)
+          )
+        )),
+        todayBal.note&&React.createElement('p',{style:{fontSize:12,color:'var(--text2)',marginTop:8}},'Note: '+todayBal.note)
+      )
+    ),
+
+    // Sales table
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},
+        React.createElement('span',{className:'card-title'},'Sales — '+fmtDate(viewDate))
+      ),
+      todaySales.length===0
+        ?React.createElement('p',{className:'text-sm text-muted'},'No sales for this date.')
+        :React.createElement('div',{className:'tbl-wrap'},
+          React.createElement('table',null,
+            React.createElement('thead',null,React.createElement('tr',null,
+              ['Item','Gender','Qty',role==='admin'?'Cost':'','Sale Price',role==='admin'?'Margin':'','Payment','By'].filter(Boolean).map(h=>React.createElement('th',{key:h},h))
+            )),
+            React.createElement('tbody',null,todaySales.map(s=>React.createElement('tr',{key:s.id},
+              React.createElement('td',null,React.createElement('span',{style:{fontWeight:500}},s.item)),
+              React.createElement('td',null,s.gender),
+              React.createElement('td',null,s.qty),
+              role==='admin'&&React.createElement('td',null,React.createElement('span',{style:{color:'var(--text2)'}},R(s.costPrice))),
+              React.createElement('td',null,React.createElement('span',{style:{fontWeight:700,color:'var(--green)'}},R(s.sellPrice))),
+              role==='admin'&&React.createElement('td',null,React.createElement('span',{style:{color:'var(--teal)',fontWeight:600}},R((s.sellPrice-s.costPrice)*s.qty))),
+              React.createElement('td',null,React.createElement('span',{className:`bdg bdg-${PAY_COLOR[s.method]||'gray'}`},PAY_ICON[s.method]+' '+s.method)),
+              React.createElement('td',null,s.emp||'—')
+            )))
+          )
+        )
+    ),
+
+    // Add Sale Modal
+    modal==='addSale'&&React.createElement('div',{className:'modal-bg',onClick:e=>e.target.className==='modal-bg'&&setModal(null)},
+      React.createElement('div',{className:'modal'},
+        React.createElement('div',{className:'modal-drag'}),
+        React.createElement('div',{className:'modal-title'},'Record New Sale'),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Date'),React.createElement('input',{type:'date',value:sForm.date,onChange:e=>setSForm(f=>({...f,date:e.target.value}))})),
+        // Gender tabs in modal
+        React.createElement('div',{className:'fg'},
+          React.createElement('label',null,'Select Gender'),
+          React.createElement('div',{className:'gtabs',style:{marginBottom:0}},
+            genders.map(g=>React.createElement('span',{key:g,className:`gtab${sForm.gender===g?' active':''}`,onClick:()=>setSForm(f=>({...f,gender:g,cat:'',itemId:'',salePrice:''}))},'g'===g[0].toLowerCase()?g:g))
+          )
+        ),
+        cats[sForm.gender]?.length>0&&React.createElement('div',{className:'fg'},
+          React.createElement('label',null,'Category'),
+          React.createElement('div',{className:'flex gap-2 flex-wrap'},
+            React.createElement('span',{className:`gtab${!sForm.cat?' active':''}`,onClick:()=>setSForm(f=>({...f,cat:'',itemId:'',salePrice:''}))},'All'),
+            (cats[sForm.gender]||[]).map(c=>React.createElement('span',{key:c,className:`gtab${sForm.cat===c?' active':''}`,onClick:()=>setSForm(f=>({...f,cat:c,itemId:'',salePrice:''}))},'c'===c[0].toLowerCase()?c:c))
+          )
+        ),
+        React.createElement('div',{className:'fg'},
+          React.createElement('label',null,'Select Item'),
+          React.createElement('select',{value:sForm.itemId,onChange:e=>setSForm(f=>({...f,itemId:e.target.value}))},
+            React.createElement('option',{value:''},'Choose item...'),
+            catItems.map(i=>React.createElement('option',{key:i.id,value:i.id},`${i.name} — Rs.${Math.round(i.sell).toLocaleString('en-PK')} (${i.qty} left)`))
+          )
+        ),
+        selItem&&React.createElement('div',{className:'alert alert-green',style:{margin:'4px 0'}},`✓ ${selItem.name} · Default: Rs.${Math.round(selItem.sell).toLocaleString('en-PK')} · Stock: ${selItem.qty}`),
+        React.createElement('div',{className:'flex gap-2'},
+          React.createElement('div',{className:'fg',style:{flex:1}},
+            React.createElement('label',null,'Qty'),
+            React.createElement('input',{type:'number',min:'1',value:sForm.qty,onChange:e=>setSForm(f=>({...f,qty:e.target.value}))})
+          ),
+          React.createElement('div',{className:'fg',style:{flex:2}},
+            React.createElement('label',null,'Sale Price (Rs.) — adjustable'),
+            React.createElement('input',{type:'number',value:sForm.salePrice,onChange:e=>setSForm(f=>({...f,salePrice:e.target.value})),placeholder:selItem?`Default: Rs.${Math.round(selItem.sell)}`:'Select item first'})
+          )
+        ),
+        React.createElement('div',{className:'fg'},
+          React.createElement('label',null,'Payment Method'),
+          React.createElement('div',{className:'flex gap-2'},
+            Object.values(PAY).map(m=>React.createElement('button',{key:m,className:`btn btn-sm ${sForm.method===m?'btn-primary':'btn-outline'}`,style:{flex:1},onClick:()=>setSForm(f=>({...f,method:m}))},PAY_ICON[m]+' '+m.split(' ')[0]))
+          )
+        ),
+        sForm.salePrice&&selItem&&React.createElement('div',{className:'alert alert-blue',style:{margin:'4px 0'}},`Total: Rs.${Math.round(+sForm.salePrice * +(sForm.qty||1)).toLocaleString('en-PK')}`),
+        React.createElement('div',{className:'modal-footer'},
+          React.createElement('button',{className:'btn btn-outline',onClick:()=>setModal(null)},'Cancel'),
+          React.createElement('button',{className:'btn btn-primary',onClick:addSale},'Record Sale')
+        )
+      )
+    ),
+
+    // Balance Sheet Modal
+    modal==='balance'&&React.createElement('div',{className:'modal-bg',onClick:e=>e.target.className==='modal-bg'&&setModal(null)},
+      React.createElement('div',{className:'modal'},
+        React.createElement('div',{className:'modal-drag'}),
+        React.createElement('div',{className:'modal-title'},'Submit Daily Balance Sheet'),
+        React.createElement(()=>{
+          const sysSales=sales.filter(s=>s.date===balForm.date).reduce((a,s)=>a+(s.sellPrice*s.qty),0);
+          const collected=Math.round(+balForm.cash||0)+Math.round(+balForm.easypaisa||0)+Math.round(+balForm.bank||0);
+          const diff=collected-sysSales;
+          return React.createElement(React.Fragment,null,
+            React.createElement('div',{className:'alert alert-blue',style:{marginBottom:'1rem'}},'System recorded sales for this date: '+R(sysSales)),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'Date'),React.createElement('input',{type:'date',value:balForm.date,onChange:e=>setBalForm(f=>({...f,date:e.target.value}))})),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'💵 Cash Collected (Rs.)'),React.createElement('input',{type:'number',value:balForm.cash,onChange:e=>setBalForm(f=>({...f,cash:e.target.value})),placeholder:'0'})),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'📱 EasyPaisa Collected (Rs.)'),React.createElement('input',{type:'number',value:balForm.easypaisa,onChange:e=>setBalForm(f=>({...f,easypaisa:e.target.value})),placeholder:'0'})),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'🏦 Bank Transfer (Rs.)'),React.createElement('input',{type:'number',value:balForm.bank,onChange:e=>setBalForm(f=>({...f,bank:e.target.value})),placeholder:'0'})),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'Daily Expenses (Rs.)'),React.createElement('input',{type:'number',value:balForm.expenses,onChange:e=>setBalForm(f=>({...f,expenses:e.target.value})),placeholder:'0'})),
+            collected>0&&React.createElement('div',{className:`alert ${Math.abs(diff)<10?'alert-green':'alert-amber'}`,style:{margin:'4px 0'}},
+              `Total Collected: ${R(collected)} | System Sales: ${R(sysSales)} | Difference: ${R(diff)}`
+            ),
+            React.createElement('div',{className:'fg'},React.createElement('label',null,'Notes (optional)'),React.createElement('input',{value:balForm.note,onChange:e=>setBalForm(f=>({...f,note:e.target.value})),placeholder:'Any notes...'})),
+            React.createElement('div',{className:'modal-footer'},
+              React.createElement('button',{className:'btn btn-outline',onClick:()=>setModal(null)},'Cancel'),
+              React.createElement('button',{className:'btn btn-primary',onClick:submitBalance},'Submit Balance')
+            )
+          );
+        },null)
+      )
+    )
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPENSES
+// ══════════════════════════════════════════════════════════════════════════
+function ExpensesPage({expenses,setExpenses,role,empName,modal,setModal}){
+  const [form,setForm]=useState({date:TODAY,type:role==='admin'?FIXED_EXP_TYPES[0]:DAILY_EXP_TYPES[0],amount:'',desc:'',emp:role==='admin'?'Admin':empName});
+  const [from,setFrom]=useState(nDaysAgo(29));
+  const [to,setTo]=useState(TODAY);
+
+  const filtered=expenses.filter(e=>e.date>=from&&e.date<=to);
+  const total=filtered.reduce((a,e)=>a+e.amount,0);
+
+  // Admin sees all, employee sees only daily (their own)
+  const visible=role==='admin'?filtered:filtered.filter(e=>e.category==='daily');
+
+  const addExp=()=>{
+    const isOther=form.type==='Other';
+    if(!form.amount) return;
+    if(isOther&&!form.desc.trim()){alert('Description is required for "Other" expense.');return;}
+    setExpenses(p=>[{id:Date.now(),...form,amount:Math.round(+form.amount),category:role==='admin'?'fixed':'daily',emp:role==='admin'?'Admin':empName},...p]);
+    setForm(f=>({...f,amount:'',desc:''}));
+    setModal(null);
+  };
+
+  const fixedTotal=filtered.filter(e=>e.category==='fixed').reduce((a,e)=>a+e.amount,0);
+  const dailyTotal=filtered.filter(e=>e.category==='daily').reduce((a,e)=>a+e.amount,0);
+
+  const expBadge={Rent:'bdg-purple',Electricity:'bdg-blue','Employee Salary':'bdg-green','Tea / Refreshment':'bdg-amber','Transport':'bdg-teal',Packaging:'bdg-pink',Other:'bdg-gray'};
+
+  return React.createElement('div',{className:'sg'},
+    // Filter bar
+    React.createElement('div',{className:'drbar'},
+      React.createElement('span',{className:'drbar-lbl'},'From:'),
+      React.createElement('input',{type:'date',value:from,onChange:e=>setFrom(e.target.value)}),
+      React.createElement('span',{className:'drbar-lbl'},'To:'),
+      React.createElement('input',{type:'date',value:to,onChange:e=>setTo(e.target.value)}),
+      React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>{setFrom(TODAY);setTo(TODAY);}},'Today'),
+      React.createElement('button',{className:'btn btn-outline btn-sm',onClick:()=>{setFrom(nDaysAgo(29));setTo(TODAY);}},'30 Days')
+    ),
+
+    // Metrics
+    React.createElement('div',{className:'mg'},
+      React.createElement('div',{className:'mc red'},React.createElement('div',{className:'mc-ico'},'📤'),React.createElement('div',{className:'mc-lbl'},'Total Expenses'),React.createElement('div',{className:'mc-val'},R(total))),
+      role==='admin'&&React.createElement('div',{className:'mc purple'},React.createElement('div',{className:'mc-ico'},'🏠'),React.createElement('div',{className:'mc-lbl'},'Fixed (Admin)'),React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(fixedTotal))),
+      React.createElement('div',{className:'mc amber'},React.createElement('div',{className:'mc-ico'},'🛒'),React.createElement('div',{className:'mc-lbl'},'Daily Expenses'),React.createElement('div',{className:'mc-val',style:{fontSize:16}},R(dailyTotal)))
+    ),
+
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-hd'},
+        React.createElement('span',{className:'card-title'},role==='admin'?'All Expenses':'Daily Expenses'),
+        React.createElement('button',{className:'btn btn-primary btn-sm',onClick:()=>setModal('addExp')},'+ Add Expense')
+      ),
+      visible.length===0?React.createElement('p',{className:'text-sm text-muted'},'No expenses in this period.'):
+      React.createElement('div',{className:'tbl-wrap'},
+        React.createElement('table',null,
+          React.createElement('thead',null,React.createElement('tr',null,['Date','Type','Amount','By','Description'].map(h=>React.createElement('th',{key:h},h)))),
+          React.createElement('tbody',null,visible.map(e=>React.createElement('tr',{key:e.id},
+            React.createElement('td',null,fmtDate(e.date)),
+            React.createElement('td',null,React.createElement('span',{className:`bdg ${expBadge[e.type]||'bdg-gray'}`},e.type)),
+            React.createElement('td',null,React.createElement('span',{style:{fontWeight:700,color:'var(--red)'}},R(e.amount))),
+            React.createElement('td',null,e.emp||'—'),
+            React.createElement('td',null,e.desc||'—')
+          )))
+        )
+      )
+    ),
+
+    // Add expense modal
+    modal==='addExp'&&React.createElement('div',{className:'modal-bg',onClick:ev=>ev.target.className==='modal-bg'&&setModal(null)},
+      React.createElement('div',{className:'modal'},
+        React.createElement('div',{className:'modal-drag'}),
+        React.createElement('div',{className:'modal-title'},role==='admin'?'Add Fixed Expense':'Add Daily Expense'),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Date'),React.createElement('input',{type:'date',value:form.date,onChange:e=>setForm(f=>({...f,date:e.target.value}))})),
+        React.createElement('div',{className:'fg'},
+          React.createElement('label',null,'Expense Type'),
+          React.createElement('select',{value:form.type,onChange:e=>setForm(f=>({...f,type:e.target.value}))},
+            (role==='admin'?FIXED_EXP_TYPES:DAILY_EXP_TYPES).map(t=>React.createElement('option',{key:t},t))
+          )
+        ),
+        React.createElement('div',{className:'fg'},React.createElement('label',null,'Amount (Rs.)'),React.createElement('input',{type:'number',value:form.amount,onChange:e=>setForm(f=>({...f,amount:e.target.value})),placeholder:'0'})),
+        React.createElement('div',{className:'fg'},
+          React.createElement('label',null,
+            'Description',
+            form.type==='Other'&&React.createElement('span',{className:'required-star'},'*')
+          ),
+          React.createElement('input',{value:form.desc,onChange:e=>setForm(f=>({...f,desc:e.target.value})),placeholder:form.type==='Other'?'Required — describe this expense...':'Optional notes...'})
+        ),
+        React.createElement('div',{className:'modal-footer'},
+          React.createElement('button',{className:'btn btn-outline',onClick:()=>setModal(null)},'Cancel'),
+          React.createElement('button',{className:'btn btn-primary',onClick:addExp},'Add Expense')
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.render(React.createElement(App),document.getElementById('root'));
+</script>
+</body>
+</html>
